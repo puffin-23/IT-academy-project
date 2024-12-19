@@ -1,0 +1,40 @@
+<div class="cupcakes-container" id="cupcakesContainer">
+    <!-- Динамически загружаемые торты будут помещены сюда -->
+</div>
+
+<script>
+    // Пример данных о тортах, полученных с сервера по URL "/cakes"
+    const cupcakes = [
+        { id: 1, name: 'Шоколадные капкейки', price: '500 руб', image: 'https://example.com/chocolate_cake.jpg' },
+        { id: 2, name: 'Ванильные капкейки', price: '450 руб', image: 'https://example.com/vanilla_cake.jpg' },
+        { id: 3, name: 'Капкейки с ягодами', price: '600 руб', image: 'https://example.com/berry_cake.jpg' },
+        // Добавьте больше тортов при необходимости
+    ];
+
+    const cupcakesContainer = document.getElementById('cupcakesContainer');
+
+    cupcakes.forEach(cupcake => {
+        const cupcakeItem = document.createElement('a');
+        cupcakeItem.href = `/cupcake:${cupcake.id}`; // Ссылка на профиль торта
+        cupcakeItem.className = 'cupcake-item';
+
+        const image = document.createElement('img');
+        image.src = cupcake.image; // URL изображения торта
+        image.alt = `${cupcake.name} изображение`;
+
+        const cupcakeInfo = document.createElement('div');
+        cupcakeInfo.className = 'cupcake-info';
+
+        const cupcakeName = document.createElement('h3');
+        cupcakeName.innerText = cupcake.name;
+
+        const cupcakePrice = document.createElement('p');
+        cupcakePrice.innerText = cupcake.price;
+
+        cupcakeInfo.appendChild(cupcakeName);
+        cupcakeInfo.appendChild(cupcakePrice);
+        cupcakeItem.appendChild(image);
+        cupcakeItem.appendChild(cupcakeInfo);
+        cupcakesContainer.appendChild(cupcakeItem);
+    });
+</script>

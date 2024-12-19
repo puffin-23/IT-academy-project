@@ -167,3 +167,84 @@ h2 {
    background-color: #a7284c;
    color: white;
 }
+.cakes-container {
+   display: flex;
+   flex-direction: column;
+   width: 80%;
+   max-width: 800px;
+   background-color: white;
+   border-radius: 10px;
+   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+   padding: 20px;
+}
+.cake-item {
+   display: flex;
+   align-items: center;
+   padding: 15px;
+   border-bottom: 1px solid #eee;
+   text-decoration: none;
+   color: black;
+   transition: background-color 0.3s;
+}
+.cake-item:hover {
+   background-color: #f9f9f9;
+}
+.cake-item img {
+   width: 80px;
+   height: 80px;
+   border-radius: 5px;
+   margin-right: 15px;
+}
+.cake-info {
+   display: flex;
+   flex-direction: column;
+}
+.cake-info h3 {
+   margin: 0;
+   font-size: 1.2em;
+}
+.cake-info p {
+   margin: 5px 0 0;
+   color: #888;
+}
+.cupcakes-container {
+   display: flex;
+   flex-direction: column;
+   width: 80%;
+   max-width: 800px;
+   background-color: white;
+   border-radius: 10px;
+   box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+   padding: 20px;
+}
+.cupcake-item {
+   display: flex;
+   align-items: center;
+   padding: 15px;
+   border-bottom: 1px solid #eee;
+   text-decoration: none;
+   color: black;
+   transition: background-color 0.3s;
+}
+.cupcake-item:hover {
+   background-color: #f9f9f9;
+}
+.cupcake-item img {
+   width: 80px;
+   height: 80px;
+   border-radius: 5px;
+   margin-right: 15px;
+}
+.cupcake-info {
+   display: flex;
+   flex-direction: column;
+}
+.cupcake-info h3 {
+   margin: 0;
+   font-size: 1.2em;
+}
+.cupcake-info p {
+   margin: 5px 0 0;
+   color: #888;
+}
+

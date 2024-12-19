@@ -26,6 +26,18 @@ app.get('/login', (req, res) => {
    });
 });
 
+app.get('/cakes', (req, res) => {
+   res.render('cakes', {
+      layout: 'site_layout'
+   });
+});
+
+app.get('/cupcakes', (req, res) => {
+   res.render('cupcakes', {
+      layout: 'site_layout'
+   });
+});
+
 
 
 app.listen(PORT, () => {
