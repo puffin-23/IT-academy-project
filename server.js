@@ -38,6 +38,12 @@ app.get('/cupcakes', (req, res) => {
    });
 });
 
+app.get('/client:id', (req, res) => {
+   res.render('client', {
+      layout: 'site_layout'
+   });
+});
+
 
 
 app.listen(PORT, () => {
