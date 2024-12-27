@@ -183,6 +183,45 @@ async function composeMaket_Cake(coreData,appData) {
     return html;
 }
 
+async function composeMaket_Cupcake(coreData,appData) {
+    // надо построить МАКЕТ одного вида капкейков
+    // по взятому нами определению термина "МАКЕТ", 
+    // мы точно знаем, из каких визуальных частей свёрстан этот макет и точно знаем, "КОНТЕНТ" с каким идентификатором в каждой визуальной части надо отобразить
+    // функция должна вернуть HTML-код, пригодный для отправки клиенту
+
+    let html="";
+
+    html+=`<html lang="ru">\n`;
+    html+=`<head>\n`;
+    if ( appData.cupcakeInfo.metakeywords )
+        html+=`<meta name="keywords" content="${appData.cupcakeInfo.metakeywords}"/>\n`;
+    if ( appData.cupcakeInfo.metadescription )
+        html+=`<meta name="description" content="${appData.cupcakeInfo.metadescription}"/>\n`;
+    html+=`<title>Капкейки - ${appData.cupcakeInfo.header} - ${appData.options.SITENAME.str_value}</title>\n`;
+    html += `<link rel="stylesheet" href="static/styles.css">\n`;
+    html+=`</head>\n`;
+
+    // скомпонуем HTML-код для каждой визуальной части сайта, построив соответствующий контент
+    let headContentHTMLs=await composeContent(22,coreData,appData); // мы точно знаем, что в макете одного вида капкейков в шапке - всегда контент 22
+    let footerContentHTMLs=await composeContent(33,coreData,appData); // в макете одного вида капкейков в подвале - всегда контент 33
+    let urlCupcakeContentHTMLs=await composeContent(66,coreData,appData); // в макете одного вида капкейков в "капкейки из УРЛа" - всегда контент 66
+
+    html += `<header><div class="header-container">${headContentHTMLs.join("\n")}</div></header>\n`;
+    html += `\n`;
+
+    html += `<main class="main-container"><div class="cupcake-container">${urlCupcakeContentHTMLs.join("\n")}</div></main>\n`;
+    html += `\n`;
+
+    html += `<footer><div class="footer-container">${footerContentHTMLs.join("\n")}</div></footer>\n`;
+
+    html += `</html>\n`;
+
+    console.log('html:', html);
+
+
+    return html;
+}
+
 
 
 module.exports = {
@@ -190,5 +229,6 @@ module.exports = {
     composeMaket_IndPage_Login,
     composeMaket_IndPage_Cakes,
     composeMaket_IndPage_Cupcakes,
-    composeMaket_Cake
+    composeMaket_Cake,
+    composeMaket_Cupcake
 };

@@ -9,7 +9,8 @@ const {
     composeMaket_IndPage_Login,
     composeMaket_IndPage_Cakes,
     composeMaket_IndPage_Cupcakes,
-    composeMaket_Cake
+    composeMaket_Cake,
+    composeMaket_Cupcake
 } = require("./makets");
 
 //Конфигурация для пула соединений
@@ -31,6 +32,7 @@ const app = express();
 
 app.use('/static', express.static(path.join(__dirname, 'static')));//Расдача статики(изображения, стили и т.д.)
 app.use('/cake/static', express.static(path.join(__dirname, 'static')));
+app.use('/cupcake/static', express.static(path.join(__dirname, 'static')));
 
 app.get('/', async (req, res, next) => {
     req.url = '/main';
@@ -167,6 +169,55 @@ app.get('/cake/:urlcode', async (req, res) => {
                 },
                 { // данные приложения
                     cakeInfo:cakes[0], // информация о торте из УРЛа - мы полагаем, что в макете будет блок "торт из УРЛа" и ему нужна эта информация
+                    options, // настройки сайта
+                }
+            );
+            res.send(html);
+        }
+    }
+    catch ( error ) {
+        reportServerError(error.stack,res,logFN);
+    }
+    finally {
+        if ( connection )
+            connection.release();
+    }
+
+});
+
+// УРЛы вида /cupcake/urlcode
+app.get('/cupcake/:urlcode', async (req, res) => { 
+    let cupcakeUrlCode=req.params.urlcode;
+    logLine(logFN,'вид страницы: капкейки, urlcode='+cupcakeUrlCode);
+
+    let connection=null;
+    try {
+        connection=await newConnectionFactory(pool,res);
+
+        let cupcakes=await selectQueryFactory(connection, `
+            select header, content, metakeywords, metadescription, image_cupcake
+            from cupcakes
+            where url_code=?
+        ;`, [cupcakeUrlCode]);
+
+        if ( cupcakes.length!==1 ) {
+            logLine(logFN,"торт не найден, urlcode="+cupcakeUrlCode);
+            res.status(404).send("Извините, таких капкейков у нас нет!");
+        }
+        else {
+
+            // Некоторым блокам потребуется содержимое таблицы настроек
+            let optionsArr=await selectQueryFactory(connection, `select * from options;`, []);
+            let options=arrayToHash(optionsArr,'code');
+
+            // все торты рендерим по "макету одного вида капкейков"
+            let html=await composeMaket_Cupcake( // вызываем построение макета одного вида капкейков
+                { // служебные параметры
+                    connection, // соединение с БД - мы полагаем, что макету потребуется делать свои операции с БД
+                    logFN, // имя файла лога - мы полагаем, что макету потребуется что-то записать в лог
+                },
+                { // данные приложения
+                    cupcakeInfo:cupcakes[0], // информация о капкейках из УРЛа - мы полагаем, что в макете будет блок "капкейки из УРЛа" и ему нужна эта информация
                     options, // настройки сайта
                 }
             );

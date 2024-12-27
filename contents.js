@@ -22,6 +22,7 @@ const {
     composeBlock_CakesList,
     composeBlock_CupcakesList,
     composeBlock_URLCake_Header, composeBlock_URLCake_Text,
+    composeBlock_URLCupcake_Header, composeBlock_URLCupcake_Text,
     composeBlock_Container_LtR, composeBlock_Menu,
 } = require("./blocks");
 
@@ -115,7 +116,13 @@ async function composeContent(contentId, coreData, appData) {
                     break;
             case 'URL_CAKE_TEXT':
                 blockHTML=await composeBlock_URLCake_Text(coreData,appData,blockAttributes);
-                    break;            
+                    break;  
+            case 'URL_CUPCAKE_HEADER':
+                blockHTML=await composeBlock_URLCupcake_Header(coreData,appData,blockAttributes);
+                    break;
+            case 'URL_CUPCAKE_TEXT':
+                blockHTML=await composeBlock_URLCupcake_Text(coreData,appData,blockAttributes);
+                    break;          
             default:
                 logLine(coreData.logFN, `cannot compose block id=${contentBlock.id} - type code ${contentBlock.block_type_code} unknown`);
         }

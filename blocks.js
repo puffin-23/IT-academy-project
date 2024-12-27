@@ -87,9 +87,25 @@ async function composeBlock_URLCake_Header(coreData, appData, blockAttributes) {
 
 async function composeBlock_URLCake_Text(coreData, appData, blockAttributes) {
     const HTMLs = await composeContent(appData.cakeInfo.content, coreData, appData);
-    return `<div class="cake-image"><img src="${appData.cakeInfo.image_cake}" alt="${appData.cakeInfo.header}"></div>\n
-    <div class="cake-text">${HTMLs.join("\n")}</div>\n
-    <a href="#" class="order-button">Заказать</a>\n`;
+    return `<div class="cake-details">\n
+    <img src="${appData.cakeInfo.image_cake}" alt="${appData.cakeInfo.header}">\n
+    <div class="cake-description">${HTMLs.join("\n")}</div>\n
+    <a href="#" class="order-button">Заказать</a>\n
+    </div>\n`;
+}
+
+async function composeBlock_URLCupcake_Header(coreData, appData, blockAttributes) {
+    return `
+    <h2>${appData.cupcakeInfo.header}</h2>\n`;
+}
+
+async function composeBlock_URLCupcake_Text(coreData, appData, blockAttributes) {
+    const HTMLs = await composeContent(appData.cupcakeInfo.content, coreData, appData);
+    return `<div class="cupcake-details">\n
+    <img src="${appData.cupcakeInfo.image_cupcake}" alt="${appData.cupcakeInfo.header}">\n
+    <div class="cupcake-description">${HTMLs.join("\n")}</div>\n
+    <a href="#" class="order-button">Заказать</a>\n
+    </div>\n`;
 }
 
 async function composeBlock_URLIndPage_Text(coreData, appData, blockAttributes) {
@@ -169,7 +185,7 @@ async function composeBlock_CupcakesList(coreData, appData, blockAttributes) {
     ;`, []);
 
     return `<div class="cupcakes-container">\n
-    ${cupcakes.map( cupcake => `<div class="cupcake-item"><img src="${cupcake.image_cupcake}"> <a href="/${cupcake.url_code}">${cupcake.header}</a></div>`).join("\n")}
+    ${cupcakes.map( cupcake => `<div class="cupcake-item"><img src="${cupcake.image_cupcake}"> <a href="/cupcake/${cupcake.url_code}">${cupcake.header}</a></div>`).join("\n")}
     </div>\n`;
 }
 
@@ -191,6 +207,7 @@ module.exports = {
     composeBlock_CakesList,
     composeBlock_CupcakesList,
     composeBlock_URLCake_Header, composeBlock_URLCake_Text,
+    composeBlock_URLCupcake_Header, composeBlock_URLCupcake_Text,
     composeBlock_URLIndPage_Text,
     composeBlock_Container_LtR, composeBlock_Menu,
 };
