@@ -1,5 +1,6 @@
 const fs = require('fs');
 const os = require('os');
+const jwt = require('jsonwebtoken');
 
 // пишет строку в файл лога и одновременно в консоль
 function logLine(logFilePath,logLine) {
@@ -113,6 +114,22 @@ function processText(text,appData) {
     return text;
 }
 
+const verifyToken = (req, res, next) => {
+    const token = req.headers['authorization'];
+    if (!token) {
+        return res.status(401).json({ message: 'Неверный токен.' });
+    }
+
+    jwt.verify(token, 'secretKey', (err, decoded) => {
+        if (err) {
+            return res.status(500).json({ message: 'Токен отсутствует.' });
+        }
+        req.userId = decoded.id;
+        req.userRole = decoded.role;
+        next();
+    });
+};
+
 module.exports={
     logLine,
     reportServerError,
@@ -120,4 +137,5 @@ module.exports={
     removeTags,
     arrayToHash,
     processText,
+    verifyToken,
 };

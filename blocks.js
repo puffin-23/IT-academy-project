@@ -151,8 +151,8 @@ async function composeBlock_FormToLogin(coreData, appData, blockAttributes) {
     <h2>${blockAttributes.text}</h2>\n
     <form id="login-form">\n
         <div class="input-group">\n
-            <label for="email">Email:</label>\n
-            <input type="email" id="email" name="email" required>\n
+            <label for="username">Username:</label>\n
+            <input type="username" id="username" name="username" required>\n
         </div>\n
         <div class="input-group">\n
             <label for="password">Пароль:</label>\n
