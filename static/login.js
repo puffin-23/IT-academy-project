@@ -21,7 +21,8 @@ document.getElementById('login-form').addEventListener('submit', async (event) =
 
          if (role === 'admin') {
             window.location.href = '/admin';
-         } else {
+         } else if (role === 'user') {
+            window.location.href = '/';
             alert('Вы успешно авторизовались!');
          }
       } else {
@@ -33,6 +34,7 @@ document.getElementById('login-form').addEventListener('submit', async (event) =
    console.log('Вход:', { username, password });
 });
 
+//Функция для регистрации пользователя
 async function register() {
    const username = document.getElementById('username').value;
    const password = document.getElementById('password').value;

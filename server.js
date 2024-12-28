@@ -71,6 +71,30 @@ const User = sequelize.define('users', {
     timestamps: false
 });
 
+//Модель  токена
+const Token = sequelize.define('tokens', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    token: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    user_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+    },
+    created_at: {
+        type: DataTypes.DATE,
+        allowNull: false
+    }
+}, {
+    timestamps: false
+})
+
+
 //Инициализация БД
 sequelize.sync();
 
@@ -302,13 +326,20 @@ app.post('/login', async (req, res) => {
     const user = await User.findOne({ where: { username: username } });
 
     if (user && (await bcrypt.compare(password, user.password))) {
-        if (user.role === 'admin') {
-            const token = jwt.sign({ id: user.id, role: 'admin' }, 'secretKey');
-            res.status(200).json({ message: 'Авторизация прошла успешно', token: token });
-        } else {
-            const token = jwt.sign({ id: user.id, role: 'user' }, 'secretKey');
-            res.status(200).json({ message: 'Авторизация прошла успешно', token: token });
+        const role = user.role;
+
+        const token = jwt.sign({ id: user.id }, 'secretKey');
+        try {
+            await Token.create({
+                user_id: user.id,
+                token: token,
+                created_at: new Date()
+            });
+        } catch (error) {
+            res.status(400).json({ error: err.message });
         }
+        res.status(200).json({ message: 'Авторизация прошла успешно', token: token, role: role });
+
     } else {
         res.status(401).json({ message: 'Неверное имя пользователя или пароль' });
     }
