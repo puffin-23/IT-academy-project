@@ -12,6 +12,7 @@ async function composeMaket_IndPage_Main(coreData, appData) {
     if (appData.indPageInfo.metadescription)
         html += `<meta name="description" content="${appData.indPageInfo.metadescription}"/>\n`;
     html += `<title>${appData.indPageInfo.title} - ${appData.options.SITENAME.str_value}</title>\n`;
+    html += `<script defer src="header.js"></script>\n`;
     html += `<link rel="stylesheet" href="static/styles.css">\n`;
     html += `</head>\n`;
 
@@ -48,6 +49,7 @@ async function composeMaket_IndPage_Login(coreData, appData) {
     if (appData.indPageInfo.metadescription)
         html += `<meta name="description" content="${appData.indPageInfo.metadescription}"/>\n`;
     html += `<title>${appData.indPageInfo.title} - ${appData.options.SITENAME.str_value}</title>\n`;
+    html += `<script defer src="header.js"></script>\n`;
     html += `<link rel="stylesheet" href="static/styles.css">\n`;
     html += `</head>\n`;
 
@@ -84,6 +86,7 @@ async function composeMaket_IndPage_Cakes(coreData, appData) {
     if (appData.indPageInfo.metadescription)
         html += `<meta name="description" content="${appData.indPageInfo.metadescription}"/>\n`;
     html += `<title>${appData.indPageInfo.title} - ${appData.options.SITENAME.str_value}</title>\n`;
+    html += `<script defer src="header.js"></script>\n`;
     html += `<link rel="stylesheet" href="static/styles.css">\n`;
     html += `</head>\n`;
 
@@ -120,6 +123,7 @@ async function composeMaket_IndPage_Cupcakes(coreData, appData) {
     if (appData.indPageInfo.metadescription)
         html += `<meta name="description" content="${appData.indPageInfo.metadescription}"/>\n`;
     html += `<title>${appData.indPageInfo.title} - ${appData.options.SITENAME.str_value}</title>\n`;
+    html += `<script defer src="header.js"></script>\n`;
     html += `<link rel="stylesheet" href="static/styles.css">\n`;
     html += `</head>\n`;
 
@@ -144,6 +148,39 @@ async function composeMaket_IndPage_Cupcakes(coreData, appData) {
     return html;
 }
 
+async function composeMaket_IndPage_Admin(coreData, appData) {
+
+    let html = "";
+
+    html += `<html lang="ru">\n`;
+    html += `<head>\n`;
+    html += `<meta name="viewport" content="width=device-width, initial-scale=1.0">\n`;
+    html += `<meta charset="utf-8">\n`;
+    html += `<title>Admin Panel</title>\n`;
+    html += `<link rel="stylesheet" href="admin_styles.css">\n`;
+    html += `<script defer src="admin.js"></script>\n`;
+    html += `<script defer src="header.js"></script>\n`;
+    html += `</head>\n`;
+    html += `<body>\n`;
+    html += `<header>`
+    html += `<nav>\n`;
+    html += `<ul>\n
+                <li><a href="#" id="users-tab">Пользователи</a></li>\n
+                <li><a href="#" id="cakes-tab">Торты</a></li>\n
+                <li><a href="#" id="cupcakes-tab">Капкейки</a></li>\n
+            </ul>\n`;
+    html += `<button id="login-button">Войти/Зарегистрироваться</button>`
+    html += `</nav>\n`;
+    html += `</header>\n`;
+    html += `<main id="content-area">\n
+         <h2>Выберите закладку для редактирования</h2>\n
+    </main>\n`
+    html += `</body>\n`;
+    html += `</html>\n`;
+
+    return html;
+}
+
 async function composeMaket_Cake(coreData,appData) {
     // надо построить МАКЕТ одного торта
     // по взятому нами определению термина "МАКЕТ", 
@@ -159,6 +196,7 @@ async function composeMaket_Cake(coreData,appData) {
     if ( appData.cakeInfo.metadescription )
         html+=`<meta name="description" content="${appData.cakeInfo.metadescription}"/>\n`;
     html+=`<title>Торт - ${appData.cakeInfo.header} - ${appData.options.SITENAME.str_value}</title>\n`;
+    html += `<script defer src="header.js"></script>\n`;
     html += `<link rel="stylesheet" href="static/styles.css">\n`;
     html+=`</head>\n`;
 
@@ -198,6 +236,7 @@ async function composeMaket_Cupcake(coreData,appData) {
     if ( appData.cupcakeInfo.metadescription )
         html+=`<meta name="description" content="${appData.cupcakeInfo.metadescription}"/>\n`;
     html+=`<title>Капкейки - ${appData.cupcakeInfo.header} - ${appData.options.SITENAME.str_value}</title>\n`;
+    html += `<script defer src="header.js"></script>\n`;
     html += `<link rel="stylesheet" href="static/styles.css">\n`;
     html+=`</head>\n`;
 
@@ -230,5 +269,6 @@ module.exports = {
     composeMaket_IndPage_Cakes,
     composeMaket_IndPage_Cupcakes,
     composeMaket_Cake,
-    composeMaket_Cupcake
+    composeMaket_Cupcake,
+    composeMaket_IndPage_Admin
 };

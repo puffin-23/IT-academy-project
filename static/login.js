@@ -17,7 +17,11 @@ document.getElementById('login-form').addEventListener('submit', async (event) =
          const data = await response.json();
          const token = data.token;
          localStorage.setItem('token', token);
+         console.log('Токен:', token);
+         
          const role = data.role;
+         localStorage.setItem('role', role);
+         console.log('Роль:', role);
 
          if (role === 'admin') {
             window.location.href = '/admin';

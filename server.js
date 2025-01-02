@@ -5,7 +5,8 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
-const { Sequelize, DataTypes } = require('sequelize');
+const multer = require('multer');
+const { Sequelize } = require('sequelize');
 
 const { logLine, reportServerError, reportRequestError, arrayToHash, verifyToken } = require('./utils');
 const { newConnectionFactory, selectQueryFactory } = require("./utils_db");
@@ -15,8 +16,11 @@ const {
     composeMaket_IndPage_Cakes,
     composeMaket_IndPage_Cupcakes,
     composeMaket_Cake,
-    composeMaket_Cupcake
+    composeMaket_Cupcake,
+    composeMaket_IndPage_Admin,
 } = require("./makets");
+const { User, Contents_blocks, Cake, Cupcake, Token } = require('./models');
+
 
 //Конфигурация для пула соединений
 const poolCinfig = {
@@ -30,73 +34,36 @@ const poolCinfig = {
 
 const pool = mysql.createPool(poolCinfig);
 
-const PORT = 8581;
-const logFN = path.join(__dirname, '_server.log');
 
-const app = express();
-
-app.use('/static', express.static(path.join(__dirname, 'static')));//Расдача статики(изображения, стили и т.д.)
-app.use('/cake/static', express.static(path.join(__dirname, 'static')));
-app.use('/cupcake/static', express.static(path.join(__dirname, 'static')));
-app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-
-//Настройка Sequelize
 const sequelize = new Sequelize('it-academy-project', 'root', '1234', {
     host: 'localhost',
     dialect: 'mysql'
 });
 
-//Модель пользователя
-const User = sequelize.define('users', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    },
-    username: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    role: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    password: {
-        type: DataTypes.STRING,
-        allowNull: false
+const PORT = 8581;
+const logFN = path.join(__dirname, '_server.log');
+const storage = multer.diskStorage({
+    destination: './static/',
+    filename: function (req, file, cb) {
+        const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8')
+        cb(null, originalName);
     }
-}, {
-    timestamps: false
 });
 
-//Модель  токена
-const Token = sequelize.define('tokens', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    },
-    token: {
-        type: DataTypes.STRING,
-        allowNull: false
-    },
-    user_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    created_at: {
-        type: DataTypes.DATE,
-        allowNull: false
-    }
-}, {
-    timestamps: false
-})
+const upload = multer({ storage: storage })
 
+const app = express();
 
-//Инициализация БД
-sequelize.sync();
+//Расдача статики(изображения, стили и т.д.)
+app.use('/static', express.static(path.join(__dirname, 'static')));
+app.use('/cake/static', express.static(path.join(__dirname, 'static')));
+app.use('/cupcake/static', express.static(path.join(__dirname, 'static')));
+app.use(express.static(path.join(__dirname, 'static')));
+app.use('/admin', express.static(path.join(__dirname, 'static')));
+
+app.use(cors());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 
 app.get('/', async (req, res, next) => {
     req.url = '/main';
@@ -182,6 +149,17 @@ app.get('/:urlcode', async (req, res) => {
                     res.send(html);
                 } break;
                 case 'admin': { // переход на административный интерфейс
+
+                    let html = await composeMaket_IndPage_Admin( // вызываем построение макета индивидуальной страницы /admin
+                        { connection, logFN },
+                        { // данные приложения
+                            indPageInfo: indPages[0], // информация о индивидуальной странице
+                            options, // настройки сайта
+                        }
+                    );
+                    console.log('html from composeMaket_IndPage_Admin:', html);
+
+                    res.send(html);
                 } break;
                 default: {
                     logLine(logFN, "неизвестная индивидуальная страница, urlcode=" + pageUrlCode);
@@ -303,7 +281,9 @@ app.post('/register', async (req, res) => {
     let username = req.body.username;
     let password = req.body.password;
 
+
     const hashedPassword = await bcrypt.hash(password, 10);
+
 
     try {
         const user = await User.create({
@@ -329,25 +309,287 @@ app.post('/login', async (req, res) => {
         const role = user.role;
 
         const token = jwt.sign({ id: user.id }, 'secretKey');
+
         try {
             await Token.create({
                 user_id: user.id,
                 token: token,
-                created_at: new Date()
+                created_at: new Date(),
+                expires_at: new Date(Date.now() + 1000 * 60 * 60 * 24),
+                user_role: role
             });
+            res.status(200).json({ message: 'Авторизация прошла успешно', token: token, role: role });
         } catch (error) {
             res.status(400).json({ error: err.message });
         }
-        res.status(200).json({ message: 'Авторизация прошла успешно', token: token, role: role });
+
 
     } else {
         res.status(401).json({ message: 'Неверное имя пользователя или пароль' });
     }
 })
 
+//Middleware для получения списка пользователей
+app.get('/admin/users', async (req, res) => {
+    const users = await User.findAll();
+    res.json(users);
+});
 
+app.get('/admin/users/:id', async (req, res) => {
+    const id = req.params.id;
+    const user = await User.findByPk(id);
+    res.json(user);
+})
 
+//Middleware для изменения данных пользователя
+app.put('/admin/users/:id', async (req, res) => {
+    if (!req.headers.authorization) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    } else if (req.headers.authorization) {
+        if (req.headers.role !== 'admin') {
+            return res.status().json({ message: 'Доступ запрещен' });
+        }
+    }
+    try {
+        const id = req.params.id;
+        const username = req.body.username;
+        const role = req.body.role;
 
-app.listen(PORT, () => {
-    console.log('Сервер запущен на порту ' + PORT);
+        const user = await User.update({
+            username: username,
+            role: role
+        }, {
+            where: {
+                id: id
+            }
+        });
+
+        if (user) {
+            res.json(user);
+        } else {
+            res.status(404).json({ message: 'Пользователь не найден' });
+        }
+    } catch (error) {
+        res.status(400).json({ 'error': error.message });
+    }
+})
+
+//Middleware для удаления пользователя
+app.delete('/admin/users/:id', async (req, res) => {
+    if (!req.headers.authorization) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    } else if (req.headers.authorization) {
+        if (req.headers.role !== 'admin') {
+            return res.status().json({ message: 'Доступ запрещен' });
+        }
+    }
+    try {
+        const id = req.params.id;
+        const user = await User.destroy({
+            where: {
+                id: id
+            }
+        });
+        if (user) {
+            res.json(user);
+        } else {
+            res.status(404).json({ message: 'Пользователь не найден' });
+        }
+    } catch (error) {
+        res.status(400).json({ 'error': error.message });
+    }
+}
+)
+
+//Middleware для получения списка тортов
+app.get('/admin/cakes', async (req, res) => {
+    if (!req.headers.authorization) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    } else if (req.headers.authorization) {
+        if (req.headers.role !== 'admin') {
+            return res.status().json({ message: 'Доступ запрещен' });
+        } else {
+            try {
+                const cakes = await Cake.findAll();
+                console.log('cakes', cakes);
+                res.json(cakes);
+            } catch (error) {
+                res.status(400).json({ 'error': error.message });
+            }
+        }
+    }
+})
+
+app.get('/admin/cakes/:id', async (req, res) => {
+    const id = req.params.id;
+    const cake = await Cake.findByPk(id);
+    res.json(cake);
+})
+
+//Middleware для изменения данных торта
+app.put('/admin/cakes/:id', upload.single('image_cake'), async (req, res) => {
+    if (!req.headers.authorization) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    } else if (req.headers.authorization) {
+        if (req.headers.role !== 'admin') {
+            return res.status().json({ message: 'Доступ запрещен' });
+        }
+    }
+    try {
+        const id = req.params.id;
+        const header = req.body.header;
+        const url_code = req.body.url_code;
+        const content = req.body.content;
+        const metakeywords = req.body.metakeywords;
+        const metadescription = req.body.metadescription;
+        const image_cake = req.file ? req.file.filename : null;
+
+        const cake = await Cake.update({
+            header: header,
+            content: content,
+            url_code: url_code,
+            metakeywords: metakeywords,
+            metadescription: metadescription,
+            image_cake: '/static/' + image_cake
+        }, {
+            where: {
+                id: id
+            }
+        });
+
+        if (cake) {
+            res.json(cake);
+        } else {
+            res.status(404).json({ message: 'Торт не найден' });
+        }
+    } catch (error) {
+        res.status(400).json({ 'error': error.message });
+    }
+})
+
+//Middleware для удаления торта
+app.delete('/admin/cakes/:id', async (req, res) => {
+    if (!req.headers.authorization) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    } else if (req.headers.authorization) {
+        if (req.headers.role !== 'admin') {
+            return res.status().json({ message: 'Доступ запрещен' });
+        }
+    }
+    try {
+        const id = req.params.id;
+        const cake = await Cake.destroy({
+            where: {
+                id: id
+            }
+        });
+        if (cake) {
+            res.json(cake);
+        } else {
+            res.status(404).json({ message: 'Торт не найден' });
+        }
+    } catch (error) {
+        res.status(400).json({ 'error': error.message });   
+    }
+})
+
+//Middleware для получения списка капкейков
+app.get('/admin/cupcakes', async (req, res) => {
+    if (!req.headers.authorization) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    } else if (req.headers.authorization) {
+        if (req.headers.role !== 'admin') {
+            return res.status().json({ message: 'Доступ запрещен' });
+        } else {
+            try {
+                const cupcakes = await Cupcake.findAll();
+                console.log('cakes', cupcakes);
+                res.json(cupcakes);
+            } catch (error) {
+                res.status(400).json({ 'error': error.message });
+            }
+        }
+    }
+});
+
+app.get('/admin/cupcakes/:id', async (req, res) => {
+    const id = req.params.id;
+    const cupcake = await Cupcake.findByPk(id);
+    res.json(cupcake);
+})
+
+//Middleware для изменения данных капкейка
+app.put('/admin/cupcakes/:id', upload.single('image_cupcake'), async (req, res) => {
+    if (!req.headers.authorization) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    } else if (req.headers.authorization) {
+        if (req.headers.role !== 'admin') {
+            return res.status().json({ message: 'Доступ запрещен' });
+        }
+    }
+    try {
+        const id = req.params.id;
+        const header = req.body.header;
+        const content = req.body.content;
+        const url_code = req.body.url_code;
+        const metakeywords = req.body.metakeywords;
+        const metadescription = req.body.metadescription;
+        const image_cupcake = req.file ? req.file.filename : null;
+
+        const cupcake = await Cupcake.update({
+            header: header,
+            content: content,
+            url_code: url_code,
+            metakeywords: metakeywords,
+            metadescription: metadescription,
+            image_cupcake: '/static/' + image_cupcake
+        }, {
+            where: {
+                id: id
+            }
+        });
+
+        if (cupcake) {
+            res.json(cupcake);
+        } else {
+            res.status(404).json({ message: 'Капкейк не найден' });
+        }
+    } catch (error) {
+        res.status(400).json({ 'error': error.message });
+    }
+})
+
+//Middleware для удаления капкейка
+app.delete('/admin/cupcakes/:id', async (req, res) => {
+    if (!req.headers.authorization) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    } else if (req.headers.authorization) {
+        if (req.headers.role !== 'admin') {
+            return res.status().json({ message: 'Доступ запрещен' });
+        }
+    }
+    try {
+        const id = req.params.id;
+        const cupcake = await Cupcake.destroy({
+            where: {
+                id: id
+            }
+        });
+        if (cupcake) {
+            res.json(cupcake);
+        } else {
+            res.status(404).json({ message: 'Капкейк не найден' });
+        }
+    } catch (error) {
+        res.status(400).json({ 'error': error.message });
+    }
+})
+
+//Инициализация БД
+sequelize.sync().then(() => {
+    app.listen(PORT, () => {
+        console.log('Сервер запущен на порту ' + PORT);
+    });
+}).catch(err => {
+    console.log(err);
 });
