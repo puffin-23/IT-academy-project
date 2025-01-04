@@ -6,9 +6,11 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const multer = require('multer');
-const { Sequelize } = require('sequelize');
+const { Sequelize, Op } = require('sequelize');
+const fs = require('fs');
+const fsPromises = fs.promises;
 
-const { logLine, reportServerError, reportRequestError, arrayToHash, verifyToken } = require('./utils');
+const { logLine, reportServerError, reportRequestError, arrayToHash, compressImage, scanDirectory } = require('./utils');
 const { newConnectionFactory, selectQueryFactory } = require("./utils_db");
 const {
     composeMaket_IndPage_Main,
@@ -43,10 +45,16 @@ const sequelize = new Sequelize('it-academy-project', 'root', '1234', {
 const PORT = 8581;
 const logFN = path.join(__dirname, '_server.log');
 const storage = multer.diskStorage({
-    destination: './static/',
-    filename: function (req, file, cb) {
+    destination: async (req, file, cb) => {
+        cb(null, path.join(__dirname, 'static'));
+
+        
+    },      
+    filename: (req, file, cb) => {
         const originalName = Buffer.from(file.originalname, 'latin1').toString('utf8')
+
         cb(null, originalName);
+        
     }
 });
 
@@ -329,7 +337,7 @@ app.post('/login', async (req, res) => {
     }
 })
 
-//Middleware для получения списка пользователей
+//Middleware списка пользователей
 app.get('/admin/users', async (req, res) => {
     const users = await User.findAll();
     res.json(users);
@@ -341,7 +349,6 @@ app.get('/admin/users/:id', async (req, res) => {
     res.json(user);
 })
 
-//Middleware для изменения данных пользователя
 app.put('/admin/users/:id', async (req, res) => {
     if (!req.headers.authorization) {
         return res.status(401).json({ message: 'Unauthorized' });
@@ -374,7 +381,6 @@ app.put('/admin/users/:id', async (req, res) => {
     }
 })
 
-//Middleware для удаления пользователя
 app.delete('/admin/users/:id', async (req, res) => {
     if (!req.headers.authorization) {
         return res.status(401).json({ message: 'Unauthorized' });
@@ -401,7 +407,7 @@ app.delete('/admin/users/:id', async (req, res) => {
 }
 )
 
-//Middleware для получения списка тортов
+//Middleware для тортов
 app.get('/admin/cakes', async (req, res) => {
     if (!req.headers.authorization) {
         return res.status(401).json({ message: 'Unauthorized' });
@@ -410,24 +416,33 @@ app.get('/admin/cakes', async (req, res) => {
             return res.status().json({ message: 'Доступ запрещен' });
         } else {
             try {
-                const cakes = await Cake.findAll();
-                console.log('cakes', cakes);
-                res.json(cakes);
+                const cakes = await Cake.findAll({
+                    include: { 
+                        model: Contents_blocks, 
+                        attributes: ['block_attributes']
+                     }
+                });
+                
+                const result = cakes.map(cake => ({
+                    id: cake.id,
+                    header: cake.header,
+                    image_cake: cake.image_cake,
+                    content: JSON.parse(cake.content),
+                    url_code: cake.url_code,
+                    metakeywords: cake.metakeywords,
+                    metadescription: cake.metadescription,
+                }))
+                    console.log('cakes', result);
+                res.json(result);
             } catch (error) {
-                res.status(400).json({ 'error': error.message });
+                console.error(error);
+                res.status(500).json({ 'error': error.message });
             }
         }
     }
 })
 
 app.get('/admin/cakes/:id', async (req, res) => {
-    const id = req.params.id;
-    const cake = await Cake.findByPk(id);
-    res.json(cake);
-})
-
-//Middleware для изменения данных торта
-app.put('/admin/cakes/:id', upload.single('image_cake'), async (req, res) => {
     if (!req.headers.authorization) {
         return res.status(401).json({ message: 'Unauthorized' });
     } else if (req.headers.authorization) {
@@ -437,34 +452,110 @@ app.put('/admin/cakes/:id', upload.single('image_cake'), async (req, res) => {
     }
     try {
         const id = req.params.id;
-        const header = req.body.header;
-        const url_code = req.body.url_code;
-        const content = req.body.content;
-        const metakeywords = req.body.metakeywords;
-        const metadescription = req.body.metadescription;
-        const image_cake = req.file ? req.file.filename : null;
-
-        const cake = await Cake.update({
-            header: header,
-            content: content,
-            url_code: url_code,
-            metakeywords: metakeywords,
-            metadescription: metadescription,
-            image_cake: '/static/' + image_cake
-        }, {
+        const cake = await Cake.findByPk(id);
+        if (!cake) {
+            return res.status(404).send('Cake not found');
+        }
+        const contentBlock = await Contents_blocks.findOne({
             where: {
-                id: id
+                content: cake.content // используем номер контента из поля content
             }
         });
-
-        if (cake) {
-            res.json(cake);
-        } else {
-            res.status(404).json({ message: 'Торт не найден' });
+        if (!contentBlock) {
+            return res.status(404).send('Content block not found');
         }
+        res.json({
+            id: cake.id,
+            header: cake.header,
+            content: contentBlock.block_attributes,
+            url_code: cake.url_code,
+            metakeywords: cake.metakeywords,
+            metadescription: cake.metadescription,
+            image_cake: cake.image_cake
+        });
     } catch (error) {
         res.status(400).json({ 'error': error.message });
     }
+})
+
+app.put('/admin/cakes/:id', upload.single('image_cake'), async (req, res) => {
+    if (!req.headers.authorization) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    } else if (req.headers.authorization) {
+        if (req.headers.role !== 'admin') {
+            return res.status().json({ message: 'Доступ запрещен' });
+        }
+    }
+    try {
+        try {
+            const directoryPath = path.join(__dirname, 'static');
+            const files = await fsPromises.readdir(directoryPath, { withFileTypes: true });
+            for (const file of files) {
+                const filePath = path.join(directoryPath, file.name);
+                const stats = await fsPromises.stat(filePath);
+
+                if (stats.isDirectory()) {
+                    await scanDirectory(filePath);
+                } else if (stats.isFile() && file.name.endsWith('.jpg') || file.name.endsWith('.jpeg') || file.name.endsWith('.png')) {
+                    console.log('Сжимаем файл', filePath);
+                    const compressedFilePath = filePath + '_compressed.PNG';
+                    await compressImage(filePath, compressedFilePath);
+                    fsPromises.unlink(filePath);
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка при сканировании директории:', error);
+        }
+
+        const oldCake = await Cake.findByPk(req.params.id);
+        const oldImage = oldCake.image_cake; 
+        if (oldImage) {
+            const oldImagePath = path.join(__dirname, oldImage);
+            if (fs.existsSync(oldImagePath)) {
+                await fsPromises.unlink(oldImagePath);
+            }
+        } else {
+            console.log('Старое изображение не найдено');
+        }
+
+        const id = req.params.id;
+        const header = req.body.header;
+        const url_code = req.body.url_code;
+        const contentText = req.body.content;
+        const metakeywords = req.body.metakeywords;
+        const metadescription = req.body.metadescription;
+
+        const cake = await Cake.findByPk(id);
+        if (!cake) {
+            return res.status(404).send('Cake not found');
+        }
+        const contentNumber = cake.content
+
+        const contentBlock = await Contents_blocks.findOne({
+            where: {
+                content: contentNumber // используем номер контента из поля content
+            }
+        });
+        if (!contentBlock) {
+            return res.status(404).send('Content block not found');
+        }
+
+        contentBlock.block_attributes = contentText;
+        await contentBlock.save();
+
+        cake.header = header;
+        cake.url_code = url_code;
+        cake.metakeywords = metakeywords;
+        cake.metadescription = metadescription;
+        if (req.file) {
+            cake.image_cake = '/static/' + req.file.filename + '_compressed.PNG';
+        }
+        await cake.save();
+
+        res.json(cake);
+    } catch (error) {
+        res.status(500).json({ 'error': error.message });
+        }
 })
 
 //Middleware для удаления торта
@@ -489,7 +580,7 @@ app.delete('/admin/cakes/:id', async (req, res) => {
             res.status(404).json({ message: 'Торт не найден' });
         }
     } catch (error) {
-        res.status(400).json({ 'error': error.message });   
+        res.status(400).json({ 'error': error.message });
     }
 })
 
@@ -513,13 +604,6 @@ app.get('/admin/cupcakes', async (req, res) => {
 });
 
 app.get('/admin/cupcakes/:id', async (req, res) => {
-    const id = req.params.id;
-    const cupcake = await Cupcake.findByPk(id);
-    res.json(cupcake);
-})
-
-//Middleware для изменения данных капкейка
-app.put('/admin/cupcakes/:id', upload.single('image_cupcake'), async (req, res) => {
     if (!req.headers.authorization) {
         return res.status(401).json({ message: 'Unauthorized' });
     } else if (req.headers.authorization) {
@@ -529,34 +613,110 @@ app.put('/admin/cupcakes/:id', upload.single('image_cupcake'), async (req, res) 
     }
     try {
         const id = req.params.id;
-        const header = req.body.header;
-        const content = req.body.content;
-        const url_code = req.body.url_code;
-        const metakeywords = req.body.metakeywords;
-        const metadescription = req.body.metadescription;
-        const image_cupcake = req.file ? req.file.filename : null;
-
-        const cupcake = await Cupcake.update({
-            header: header,
-            content: content,
-            url_code: url_code,
-            metakeywords: metakeywords,
-            metadescription: metadescription,
-            image_cupcake: '/static/' + image_cupcake
-        }, {
+        const cupcake = await Cupcake.findByPk(id);
+        if (!cupcake) {
+            return res.status(404).send('Cupcake not found');
+        }
+        const contentBlock = await Contents_blocks.findOne({
             where: {
-                id: id
+                content: cupcake.content // используем номер контента из поля content
             }
         });
-
-        if (cupcake) {
-            res.json(cupcake);
-        } else {
-            res.status(404).json({ message: 'Капкейк не найден' });
+        if (!contentBlock) {
+            return res.status(404).send('Content block not found');
         }
+        res.json({
+            id: cupcake.id,
+            header: cupcake.header,
+            content: contentBlock.block_attributes,
+            url_code: cupcake.url_code,
+            metakeywords: cupcake.metakeywords,
+            metadescription: cupcake.metadescription,
+            image_cake: cupcake.image_cupcake
+        });
     } catch (error) {
         res.status(400).json({ 'error': error.message });
     }
+})
+
+app.put('/admin/cupcakes/:id', upload.single('image_cupcake'), async (req, res) => {
+    if (!req.headers.authorization) {
+        return res.status(401).json({ message: 'Unauthorized' });
+    } else if (req.headers.authorization) {
+        if (req.headers.role !== 'admin') {
+            return res.status().json({ message: 'Доступ запрещен' });
+        }
+    }
+    try {
+        try {
+            const directoryPath = path.join(__dirname, 'static');
+            const files = await fsPromises.readdir(directoryPath, { withFileTypes: true });
+            for (const file of files) {
+                const filePath = path.join(directoryPath, file.name);
+                const stats = await fsPromises.stat(filePath);
+
+                if (stats.isDirectory()) {
+                    await scanDirectory(filePath);
+                } else if (stats.isFile() && file.name.endsWith('.jpg') || file.name.endsWith('.jpeg') || file.name.endsWith('.png')) {
+                    console.log('Сжимаем файл', filePath);
+                    const compressedFilePath = filePath + '_compressed.PNG';
+                    await compressImage(filePath, compressedFilePath);
+                    fsPromises.unlink(filePath);
+                }
+            }
+        } catch (error) {
+            console.error('Ошибка при сканировании директории:', error);
+        }
+
+        const oldCupcake = await Cupcake.findByPk(req.params.id);
+        const oldImage = oldCupcake.image_cupcake;
+        if (oldImage) {
+            const oldFilePath = path.join(__dirname, oldImage);
+            if (fs.existsSync(oldFilePath)) {
+                await fsPromises.unlink(oldFilePath); 
+            }
+        } else {
+            console.log('Старое изображение не найден');
+        }
+
+        const id = req.params.id;
+        const header = req.body.header;
+        const url_code = req.body.url_code;
+        const contentText = req.body.content;
+        const metakeywords = req.body.metakeywords;
+        const metadescription = req.body.metadescription;
+
+        const cupcake = await Cupcake.findByPk(id);
+        if (!cupcake) {
+            return res.status(404).send('Cupcake not found');
+        }
+        const contentNumber = cupcake.content
+
+        const contentBlock = await Contents_blocks.findOne({
+            where: {
+                content: contentNumber // используем номер контента из поля content
+            }
+        });
+        if (!contentBlock) {
+            return res.status(404).send('Content block not found');
+        }
+
+        contentBlock.block_attributes = contentText;
+        await contentBlock.save();
+
+        cupcake.header = header;
+        cupcake.url_code = url_code;
+        cupcake.metakeywords = metakeywords;
+        cupcake.metadescription = metadescription;
+        if (req.file) {
+            cupcake.image_cupcake = '/static/' + req.file.filename + '_compressed.PNG';
+        }
+        await cupcake.save();
+
+        res.json(cupcake);
+    } catch (error) {
+        res.status(500).json({ 'error': error.message });
+        }
 })
 
 //Middleware для удаления капкейка

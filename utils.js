@@ -1,6 +1,7 @@
 const fs = require('fs');
 const os = require('os');
 const jwt = require('jsonwebtoken');
+const Jimp = require('jimp');
 
 // пишет строку в файл лога и одновременно в консоль
 function logLine(logFilePath, logLine) {
@@ -141,6 +142,30 @@ const verifyToken = (req, res, next) => {
     };
 };
 
+async function compressImage(filePath, outputPath) {
+    try {
+        const image = await Jimp.read(filePath);
+        await image.resize(800, Jimp.AUTO) // Изменяем размер, ширина 800px, высота - пропорционально
+            .quality(80) // Устанавливаем качество на 80
+            .writeAsync(outputPath)// Записываем сжатую версию
+        console.log('Изображение успешно сжато');
+        
+    } catch (err) {
+        console.error('Ошибка при сжатии изображения:', err);
+    }
+}
+async function scanDirectory(directoryPath) {
+    const files = fs.readdir(directoryPath);
+    for (const file of files) {
+        const filePath = path.join(directoryPath, file);
+        const stats = fs.stat(filePath);
+        if (stats.isDirectory()) {
+            await scanDirectory(filePath);
+        } else {
+            return filePath
+        }
+    }
+}
 module.exports = {
     logLine,
     reportServerError,
@@ -149,4 +174,6 @@ module.exports = {
     arrayToHash,
     processText,
     verifyToken,
+    compressImage,
+    scanDirectory
 };

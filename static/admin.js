@@ -60,6 +60,7 @@ document.addEventListener('DOMContentLoaded', function () {
     async function loadCakes() {
         contentArea.innerHTML = `
             <h2>Редактирование Тортов</h2>
+            <button onclick="addCake()" id="add-cake-button">Добавить Торт</button>
             <div id="cakes-list"></div>
         `;
         const response = await fetch('/admin/cakes', {
@@ -147,6 +148,7 @@ document.addEventListener('DOMContentLoaded', function () {
     async function loadCupcakes() {
         contentArea.innerHTML = `
             <h2>Редактирование Капкейков</h2>
+            <button onclick="addCupcake()" id="add-cupcake-button">Добавить Капкейки</button>
             <div id="cupcakes-list"></div>
         `;
         const response = await fetch('/admin/cupcakes', {
@@ -540,6 +542,138 @@ document.addEventListener('DOMContentLoaded', function () {
             } else {
                 alert('Произошла ошибка при удалении капкейки');
             }
+        } catch (error) {
+            console.error('Произошла ошибка:', error);
+        }
+    }
+
+    window.addCake = async function () {
+        try {
+            const contentArea = document.getElementById('content-area');
+            contentArea.innerHTML = `
+            <h2>Добавление Торта</h2>
+                <form id="cake-form">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td><label for="header">Заголовок:</label></td>
+                                <td><input type="text" id="header" name="header" required></td>
+                            </tr>
+                            <tr>
+                                <td><label for="metakeywords">Meta Keywords:</label></td>
+                                <td><input type="text" id="metakeywords" name="metakeywords" required></td>
+                            </tr>
+                            <tr>
+                                <td><label for="metadescription">Meta Description:</label></td>
+                                <td><input type="text" id="metadescription" name="metadescription" required></td>
+                            </tr>
+                            <tr>
+                                <td><label for="url_code">URL:</label></td>
+                                <td><input type="text" id="url_code" name="url_code" required></td>
+                            </tr>
+                            <tr>
+                                <td><label for="content">Содержание:</label></td>
+                                <td><textarea id="content" name="content" required></textarea></td>
+                            </tr>
+                            <tr>
+                                <td><label for="image_cake">Изображение:</label></td>
+                                <td><input type="file" id="image_cake" name="image_cake" required></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="submit">Добавить</button>
+                </form>
+        `;
+
+            const form = document.getElementById('cake-form');
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const formData = new FormData(form);
+                const response = await fetch('/admin/cakes', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': localStorage.getItem('token'),
+                        'Role': localStorage.getItem('role'),
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert('Торт успешно добавлен');
+                    loadCakes();
+                } else {
+                    const errorData = await response.json();
+                    alert('Произошла ошибка при добавлении торта: ' + errorData.message);
+                }
+            });
+        } catch (error) {
+            console.error('Произошла ошибка:', error);
+        }
+    }
+
+    window.addCupcake = async function () {
+        try {
+            const contentArea = document.getElementById('content-area');
+            contentArea.innerHTML = `
+            <h2>Добавление Капкейков</h2>
+                <form id="cupcake-form"></form>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td><label for="header">Заголовок:</label></td>
+                                <td><input type="text" id="header" name="header" required></td>
+                            </tr>
+                            <tr>
+                                <td><label for="metakeywords">Meta Keywords:</label></td>
+                                <td><input type="text" id="metakeywords" name="metakeywords" required></td>
+                            </tr>
+                            <tr>
+                                <td><label for="metadescription">Meta Description:</label></td>
+                                <td><input type="text" id="metadescription" name="metadescription" required></td>
+                            </tr>
+                            <tr>
+                                <td><label for="url_code">URL:</label></td>
+                                <td><input type="text" id="url_code" name="url_code" required></td>
+                            </tr>
+                            <tr>
+                                <td><label for="content">Содержание:</label></td>
+                                <td><textarea id="content" name="content" required></textarea></td>
+                            </tr>
+                            <tr>
+                            <td><label for="image_cupcake">Изображение:</label></td>
+                            <td><input type="file" id="image_cupcake" name="image_cupcake" required></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="submit">Добавить</button>
+                </form>
+        `;
+
+            const form = document.getElementById('cupcake-form');
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const formData = new FormData(form);
+                const response = await fetch('/admin/cupcakes', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': localStorage.getItem('token'),
+                        'Role': localStorage.getItem('role'),
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert('Капкейки успешно добавлены');
+                    loadCupcakes();
+                } else {
+                    const errorData = await response.json();
+                    alert('Произошла ошибка при добавлении капкейков: ' + errorData.message);
+                }
+            });
         } catch (error) {
             console.error('Произошла ошибка:', error);
         }

@@ -2,8 +2,8 @@ const { Sequelize, DataTypes } = require('sequelize');
 
 //Настройка Sequelize
 const sequelize = new Sequelize('it-academy-project', 'root', '1234', {
-   host: 'localhost',
-   dialect: 'mysql'
+    host: 'localhost',
+    dialect: 'mysql'
 });
 
 //Модель пользователя
@@ -60,30 +60,6 @@ const Token = sequelize.define('tokens', {
     timestamps: false
 })
 
-const Contents_blocks = sequelize.define('contents_blocks', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    },
-    content: {
-        type: DataTypes.INTEGER,
-        allowNull: true
-    },
-    content_ord: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
-    block_type: {
-        type: DataTypes.SMALLINT,
-        allowNull: false
-    },
-    block_attributes: {
-        type: DataTypes.TEXT,
-        allowNull: true
-}, 
-}, { timestamps: false }) 
-
 const Cake = sequelize.define('cakes', {
     id: {
         type: DataTypes.INTEGER,
@@ -101,10 +77,6 @@ const Cake = sequelize.define('cakes', {
     content: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        references: {
-            model: Contents_blocks,
-            key: 'content',
-        }
     },
     metakeywords: {
         type: DataTypes.TEXT,
@@ -123,44 +95,88 @@ const Cake = sequelize.define('cakes', {
 })
 
 const Cupcake = sequelize.define('cupcakes', {
-   id: {
-       type: DataTypes.INTEGER,
-       primaryKey: true,
-       autoIncrement: true
-   },
-   url_code: {
-       type: DataTypes.STRING,
-       allowNull: false
-   },
-   header: {
-       type: DataTypes.STRING,
-       allowNull: false
-   },
-   content: {
-       type: DataTypes.INTEGER,
-       allowNull: false,
-       references: {
-           model: Contents_blocks,
-           key: 'block_attributes',
-       }
-   },
-   metakeywords: {
-       type: DataTypes.TEXT,
-       allowNull: false
-   },
-   metadescription: {
-       type: DataTypes.TEXT,
-       allowNull: false
-   },
-   image_cupcake: {
-       type: DataTypes.STRING,
-       allowNull: false
-   }
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    url_code: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    header: {
+        type: DataTypes.STRING,
+        allowNull: false
+    },
+    content: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    metakeywords: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
+    metadescription: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    },
+    image_cupcake: {
+        type: DataTypes.TEXT,
+        allowNull: false
+    }
 }, {
-   timestamps: false
+    timestamps: false
 })
 
-Contents_blocks.hasMany(Cake, { foreignKey: 'content' });
-Contents_blocks.hasMany(Cupcake, { foreignKey: 'content' });
+const Contents_blocks = sequelize.define('contents_blocks', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
+    content: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+            model: Cake,
+            key: 'content',
+        },
+        references: {
+            model: Cupcake,
+            key: 'content',
+        },
+
+    },
+    content_ord: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+    },
+    block_type: {
+        type: DataTypes.SMALLINT,
+        allowNull: false
+    },
+    block_attributes: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+    },
+}, { timestamps: false })
+
+Contents_blocks.belongsTo(Cake, {
+    foreignKey: 'content',
+    targetKey: 'content',
+});
+Contents_blocks.belongsTo(Cupcake, {
+    foreignKey: 'content',
+    targetKey: 'content',
+})
+Cake.hasMany(Contents_blocks, {
+    foreignKey: 'content',
+    sourceKey: 'content',
+});
+
+
+
+
+
 
 module.exports = { User, Token, Contents_blocks, Cake, Cupcake };
