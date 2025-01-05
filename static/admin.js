@@ -32,10 +32,6 @@ document.addEventListener('DOMContentLoaded', function () {
                                 <tr>
                                     <td>username</td>
                                     <td>${user.username}</td>
-                                    <td>
-                                        <button onclick="editUser(${user.id})">Редактировать</button>
-                                        <button onclick="deleteUser(${user.id})">Удалить</button>
-                                    </td>
                                 </tr>
                                 <tr>
                                     <td>role</td>
@@ -89,42 +85,22 @@ document.addEventListener('DOMContentLoaded', function () {
         <tr>
             <td><span>Заголовок</span></td>
             <td><span>${cake.header}</span></td>
-            <td>
-                <button onclick="editCake(${cake.id})">Редактировать</button>
-                <button onclick="deleteCake(${cake.id})">Удалить</button>
-            </td>
         </tr>
         <tr>
             <td><span>Meta Keywords</span></td>
             <td><span>${cake.metakeywords}</span></td>
-            <td>
-                <button onclick="editCake(${cake.id})">Редактировать</button>
-                <button onclick="deleteCake(${cake.id})">Удалить</button>
-            </td>
         </tr>
         <tr>
             <td><span>Meta Description</span></td>
             <td><span>${cake.metadescription}</span></td>
-            <td>
-                <button onclick="editCake(${cake.id})">Редактировать</button>
-                <button onclick="deleteCake(${cake.id})">Удалить</button>
-            </td>
         </tr>
         <tr>
             <td><span>URL</span></td>
             <td><span>${cake.url_code}</span></td>
-            <td>
-                <button onclick="editCake(${cake.id})">Редактировать</button>
-                <button onclick="deleteCake(${cake.id})">Удалить</button>
-            </td>
         </tr>
         <tr>
             <td><span>Контент</span></td>
             <td><span>${cake.content}</span></td>
-            <td>
-                <button onclick="editCake(${cake.id})">Редактировать</button>
-                <button onclick="deleteCake(${cake.id})">Удалить</button>
-            </td>
         </tr>
         <tr>
             <td><span>Изображение</span></td>
@@ -136,7 +112,6 @@ document.addEventListener('DOMContentLoaded', function () {
         </tr>
     </tbody>
 </table>
-    
                 `;
                 cakesList.appendChild(cakeItem);
             });
@@ -177,42 +152,22 @@ document.addEventListener('DOMContentLoaded', function () {
                             <tr>
                                 <td><span>Заголовок</span></td>
                                 <td><span>${cupcake.header}</span></td>
-                                <td>
-                                    <button onclick="editCupcake(${cupcake.id})">Редактировать</button>
-                                    <button onclick="deleteCupcake(${cupcake.id})">Удалить</button>
-                                </td>
                             </tr>
                             <tr>
                                 <td><span>Meta Keywords</span></td>
                                 <td><span>${cupcake.metakeywords}</span></td>
-                                <td>
-                                    <button onclick="editCupcake(${cupcake.id})">Редактировать</button>
-                                    <button onclick="deleteCupcake(${cupcake.id})">Удалить</button>
-                                </td>
                             </tr>
                             <tr>
                                 <td><span>Meta Description</span></td>
                                 <td><span>${cupcake.metadescription}</span></td>
-                                <td>
-                                    <button onclick="editCupcake(${cupcake.id})">Редактировать</button>
-                                    <button onclick="deleteCupcake(${cupcake.id})">Удалить</button>
-                                </td>
                             </tr>
                             <tr>
                                 <td><span>URL</span></td>
                                 <td><span>${cupcake.url_code}</span></td>
-                                <td>
-                                    <button onclick="editCupcake(${cupcake.id})">Редактировать</button>
-                                    <button onclick="deleteCupcake(${cupcake.id})">Удалить</button>
-                                </td>
                             </tr>
                             <tr>
                                 <td><span>Контент</span></td>
                                 <td><span>${cupcake.content}</span></td>
-                                <td>
-                                    <button onclick="editCupcake(${cupcake.id})">Редактировать</button>
-                                    <button onclick="deleteCupcake(${cupcake.id})">Удалить</button>
-                                </td>
                             </tr>
                             <tr>
                                 <td><span>Изображение</span></td>

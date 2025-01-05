@@ -1,0 +1,9 @@
+# конкретному роботу гугла - разрешить полный доступ, кроме папки temp
+User-agent: Googlebot
+Allow: /
+Disallow: /nginx.conf
+Disallow: /*.sql$
+
+# всем роботам - запретить УРЛ которые начинаются с /admin
+User-agent: *
+Disallow: /admin

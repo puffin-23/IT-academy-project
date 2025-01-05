@@ -12,8 +12,8 @@ async function composeMaket_IndPage_Main(coreData, appData) {
     if (appData.indPageInfo.metadescription)
         html += `<meta name="description" content="${appData.indPageInfo.metadescription}"/>\n`;
     html += `<title>${appData.indPageInfo.title} - ${appData.options.SITENAME.str_value}</title>\n`;
+    html += `<link rel="stylesheet" href="styles.css">\n`;
     html += `<script defer src="header.js"></script>\n`;
-    html += `<link rel="stylesheet" href="static/styles.css">\n`;
     html += `</head>\n`;
 
     // скомпонуем HTML-код для каждой визуальной части сайта, построив соответствующий контент
@@ -50,7 +50,7 @@ async function composeMaket_IndPage_Login(coreData, appData) {
         html += `<meta name="description" content="${appData.indPageInfo.metadescription}"/>\n`;
     html += `<title>${appData.indPageInfo.title} - ${appData.options.SITENAME.str_value}</title>\n`;
     html += `<script defer src="header.js"></script>\n`;
-    html += `<link rel="stylesheet" href="static/styles.css">\n`;
+    html += `<link rel="stylesheet" href="/styles.css">\n`;
     html += `</head>\n`;
 
     // скомпонуем HTML-код для каждой визуальной части сайта, построив соответствующий контент
@@ -87,7 +87,7 @@ async function composeMaket_IndPage_Cakes(coreData, appData) {
         html += `<meta name="description" content="${appData.indPageInfo.metadescription}"/>\n`;
     html += `<title>${appData.indPageInfo.title} - ${appData.options.SITENAME.str_value}</title>\n`;
     html += `<script defer src="header.js"></script>\n`;
-    html += `<link rel="stylesheet" href="static/styles.css">\n`;
+    html += `<link rel="stylesheet" href="styles.css">\n`;
     html += `</head>\n`;
 
     // скомпонуем HTML-код для каждой визуальной части сайта, построив соответствующий контент
@@ -124,7 +124,7 @@ async function composeMaket_IndPage_Cupcakes(coreData, appData) {
         html += `<meta name="description" content="${appData.indPageInfo.metadescription}"/>\n`;
     html += `<title>${appData.indPageInfo.title} - ${appData.options.SITENAME.str_value}</title>\n`;
     html += `<script defer src="header.js"></script>\n`;
-    html += `<link rel="stylesheet" href="static/styles.css">\n`;
+    html += `<link rel="stylesheet" href="styles.css">\n`;
     html += `</head>\n`;
 
     // скомпонуем HTML-код для каждой визуальной части сайта, построив соответствующий контент
@@ -197,7 +197,7 @@ async function composeMaket_Cake(coreData,appData) {
         html+=`<meta name="description" content="${appData.cakeInfo.metadescription}"/>\n`;
     html+=`<title>Торт - ${appData.cakeInfo.header} - ${appData.options.SITENAME.str_value}</title>\n`;
     html += `<script defer src="header.js"></script>\n`;
-    html += `<link rel="stylesheet" href="static/styles.css">\n`;
+    html += `<link rel="stylesheet" href="styles.css">\n`;
     html+=`</head>\n`;
 
     // скомпонуем HTML-код для каждой визуальной части сайта, построив соответствующий контент
@@ -237,7 +237,7 @@ async function composeMaket_Cupcake(coreData,appData) {
         html+=`<meta name="description" content="${appData.cupcakeInfo.metadescription}"/>\n`;
     html+=`<title>Капкейки - ${appData.cupcakeInfo.header} - ${appData.options.SITENAME.str_value}</title>\n`;
     html += `<script defer src="header.js"></script>\n`;
-    html += `<link rel="stylesheet" href="static/styles.css">\n`;
+    html += `<link rel="stylesheet" href="styles.css">\n`;
     html+=`</head>\n`;
 
     // скомпонуем HTML-код для каждой визуальной части сайта, построив соответствующий контент

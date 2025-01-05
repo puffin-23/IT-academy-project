@@ -1,4 +1,14 @@
 {
+  "name": "it-academy-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "mocha --recursive --exit"
+  },
+  "author": "Stashkevich Darya",
+  "license": "ISC",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
@@ -10,6 +20,14 @@
     "multer": "^1.4.5-lts.1",
     "mysql": "^2.18.0",
     "mysql2": "^3.12.0",
-    "sequelize": "^6.37.5"
+    "sequelize": "^6.37.5",
+    "unzipper": "^0.12.3",
+    "zip-a-folder": "^3.1.8"
+  },
+  "devDependencies": {
+    "chai": "^5.1.2",
+    "mocha": "^11.0.1",
+    "sinon": "^19.0.2",
+    "supertest": "^7.0.0"
   }
 }

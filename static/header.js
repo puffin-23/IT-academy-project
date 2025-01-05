@@ -3,6 +3,11 @@ document.addEventListener('DOMContentLoaded', () => {
    const token = localStorage.getItem('token');
    const role = localStorage.getItem('role');
 
+   if (!authButton) {
+    console.error('Кнопка логина не найдена!');
+    return;
+}
+
    // Проверяем, есть ли токен
    if (token) {
        // Если пользователь авторизован

@@ -115,33 +115,6 @@ function processText(text, appData) {
     return text;
 }
 
-const verifyToken = (req, res, next) => {
-    const token = req.headers['Authorization'];
-    const role = req.headers['Role'];
-
-    if (!token) {
-        res.status(401).json({ message: 'Токен отсутствует.' });
-        return;
-    } else {
-        switch (role) {
-            case 'user': {
-                res.status(403).json({ message: 'Доступ запрещен.' });
-                return;
-            } case 'admin': {
-                jwt.verify(token, 'secretKey', (err, decoded) => {
-                    if (err) {
-                        return res.status(500).json({ message: 'Токен отсутствует.' });
-                    }
-                    req.user_id = decoded.id;
-                    req.user_role = decoded.user_role;
-                    next();
-                })
-            }
-        }
-
-    };
-};
-
 async function compressImage(filePath, outputPath) {
     try {
         const image = await Jimp.read(filePath);
@@ -173,7 +146,6 @@ module.exports = {
     removeTags,
     arrayToHash,
     processText,
-    verifyToken,
     compressImage,
     scanDirectory
 };

@@ -76,7 +76,7 @@ async function composeBlock_ButtonToBasket(coreData, appData, blockAttributes) {
 }
 
 async function composeBlock_ButtonToLogin(coreData, appData, blockAttributes) {
-    return `<div><button class="login-button" type="submit" onclick="location.href='/login'">${blockAttributes.text}</button></div>`;
+    return `<div><button class="login-button" id="login-button" type="submit" onclick="location.href='/login'">${blockAttributes.text}</button></div>`;
 }
 
 
@@ -121,18 +121,13 @@ ${HTMLs.map( html => `${html}` ).join("\n")}
 }
 
 async function composeBlock_Menu(coreData, appData, blockAttributes) {
-    const HTML1s = await composeContent(blockAttributes.content1, coreData, appData);
-    console.log('HTML1s', HTML1s);
-    
-    const HTML2s = await composeContent(blockAttributes.content2, coreData, appData);
-    console.log('HTML2s', HTML2s);
     return `<div class=menu>\n
                 <div class=circle onclick="location.href='/cakes'">\n
-                <img src='/static/menu_cakes.PNG' alt="Торты">\n
-                    ${HTML1s.join("\n")}</div>\n
+                <img src='/menu_cakes.PNG' alt="Торты">\n
+                </div>\n
                 <div class=circle onclick="location.href='/cupcakes'">
-                <img src='/static/menu_cupcakes.PNG' alt="Капкейки">\n
-                    ${HTML2s.join("\n")}</div>\n 
+                <img src='/menu_cupcakes.PNG' alt="Капкейки">\n
+                </div>\n 
             </div>\n`;
 }
 
@@ -164,7 +159,7 @@ async function composeBlock_FormToLogin(coreData, appData, blockAttributes) {
         </div>
     </form>
     </div>\n
-    <script src="/static/login.js"></script>\n`
+    <script src="/login.js"></script>\n`
 }
 
 async function composeBlock_CakesList(coreData, appData, blockAttributes) {
